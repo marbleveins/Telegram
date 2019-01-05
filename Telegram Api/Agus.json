@@ -1,0 +1,46 @@
+Please enter your phone (or bot token): +541136778545
+Please enter the code you received: 54229
+Signed in successfully as Agus
+User(
+	id=278797568,
+	is_self=True,
+	contact=False,
+	mutual_contact=False,
+	deleted=False,
+	bot=False,
+	bot_chat_history=False,
+	bot_nochats=False,
+	verified=False,
+	restricted=False,
+	min=False,
+	bot_inline_geo=False,
+	access_hash=-2682585212285688419,
+	first_name='Agus',
+	last_name=None,
+	username='beyondtanarianhills',
+	phone='541136778545',
+	photo=UserProfilePhoto(
+		photo_id=1197426437220575151,
+		photo_small=FileLocation(
+			dc_id=1,
+			volume_id=806008491,
+			local_id=18394,
+			secret=8150308007522010178,
+			file_reference=b'\x00\\-\x9f\x1ba3\xf7-\x19T\x93u%?\xff\x16E\xbe\xb6\xe8'
+		),
+		photo_big=FileLocation(
+			dc_id=1,
+			volume_id=806008491,
+			local_id=18396,
+			secret=-6182103514706993675,
+			file_reference=b'\x00\\-\x9f\x1b\x8c9\x0c4\x13\xe9{\xc44\xc9\x97\x1a\xc5h\x08\xdb'
+		)
+	),
+	status=UserStatusOnline(
+		expires=datetime.datetime(2019, 1, 3, 5, 40, 23, tzinfo=datetime.timezone.utc)
+	),
+	bot_info_version=None,
+	restriction_reason=None,
+	bot_inline_placeholder=None,
+	lang_code=None
+)
