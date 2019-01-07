@@ -14,10 +14,7 @@ api_hash = '58733b74f65c4af4de950b15eafa7e39'#58733b74f65c4af4de950b15eafa7e39
 loop = asyncio.get_event_loop()
 
 
-telegramClient: TelegramClient
 chatWarsHelper: cwHelper.ChatWarsHelper
-
-
 
 
 class TelegramInfo(dict):
@@ -35,37 +32,24 @@ def Main():
     RunClock()
     print('End Main')
 
-async def StartTelegramAsync(telegramInfo):
-    await PrepareTelegramAsync(telegramInfo)
-
 def StartTelegram():
-    PrepareTelegram(telegramInfo)
-    #telegramInfo.telegramClient = loop.create_task(PrepareTelegramAsync(telegramInfo))
-
-async def PrepareTelegramAsync(telegramInfo):
-    async with TelegramClient('telegram_api_2', api_id, api_hash) as client:
-        telegramInfo.telegramClient = await client.start()
-        print('=> PrepareTelegram... client: ' + str(telegramInfo.telegramClient))
-        #me = client.get_me()
-        await telegramInfo.telegramClient.send_message('self', 'starting telegram client')
-        AddTelegramNewMessageHandler(TelegramNewMessageHandler, telegramInfo.telegramClient)
-        StartChatWarsHelper(telegramInfo)
-        loop.create_task(TelegramDisconnected(telegramInfo))
-    print('=> PrepareTelegram End')
-    return telegramInfo
-
-def PrepareTelegram(telegramInfo):
+    global telegramInfo
+    global loop
     with TelegramClient('telegram_api_2', api_id, api_hash) as client:
+        #me = client.get_me()
         telegramInfo.telegramClient = client.start()
         print('=> PrepareTelegram... client: ' + str(telegramInfo.telegramClient))
-        #me = client.get_me()
         telegramInfo.telegramClient.send_message('self', 'starting telegram client')
         
         AddTelegramNewMessageHandler(TelegramNewMessageHandler, telegramInfo.telegramClient)
         StartChatWarsHelper(telegramInfo)
 
-        loop.create_task(TelegramDisconnected(telegramInfo))
+        #loop.create_task(TelegramDisconnected(telegramInfo))
+        resp = loop.run_until_complete(littleThings.runAsyncEvery(5, PrintClient))
+        telegramInfo.telegramClient.run_until_disconnected()
     print('=> PrepareTelegram End')
+    loop.create_task(TelegramDisconnected(telegramInfo))
+
 
 async def TelegramDisconnected(telegramInfo):
     try:
@@ -75,28 +59,34 @@ async def TelegramDisconnected(telegramInfo):
     print('TelegramDisconnected')
     StartTelegram()
 
+async def PrintClient():
+    global telegramInfo
+    print('client connected: ' + str(telegramInfo.telegramClient.is_connected()))
+
 
 def StartChatWarsHelper(telegramInfo):
+    global chatWarsHelper
     try:
-        print('StartChatWarsHelper')
-        print('telegramClient: ' + str(telegramInfo.telegramClient))
         chatWarsHelper = cwHelper.ChatWarsHelper(telegramInfo.telegramClient)
         AddTelegramNewMessageHandler(chatWarsHelper.testMessageAboutCW, telegramInfo.telegramClient)
-        print('StartChatWarsHelper End')
+        print('StartChatWarsHelper started..........')
     except Exception as err:
         print('Error en StartChatWarsHelper: ' + str(err))
 
 
-def TelegramNewMessageHandler(event: events.NewMessage.Event):
-    loop.create_task(print('TelegramNewMessageHandler: ' + str(event)))
-    #loop.create_task(task)
+async def TelegramNewMessageHandler(event: events.NewMessage.Event):
+    try:
+        print('TelegramNewMessageHandler: ' + str(event))
+    except Exception as e:
+            print('Error in TelegramNewMessageHandler')
+            print(str(e))
 
 def AddTelegramNewMessageHandler(function, telegramClient):
     telegramClient.add_event_handler(function, events.NewMessage)
     print('AddTelegramNewMessageHandler: ' + str(function))
 
 def RunClock():
-    loop.run_until_complete(littleThings.runAsyncEvery(30, littleThings.printClock))#repite las task?
+    loop.run_until_complete(littleThings.runAsyncEvery(30, littleThings.printClock))
 
 
 #### Start ####
