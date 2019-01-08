@@ -67,7 +67,7 @@ def StartChatWarsHelper(telegramInfo):
     global chatWarsHelper
     chatWarsHelper = cwHelper.ChatWarsHelper(telegramInfo.telegramClient)
     chatWarsHelper.on = True
-    AddTelegramNewMessageHandler(chatWarsHelper.testMessageAboutCW, telegramInfo.telegramClient)
+    AddTelegramNewMessageHandler(chatWarsHelper.cwNewMessageHandler, telegramInfo.telegramClient)
     print('ChatWarsHelper started..........')
 
 

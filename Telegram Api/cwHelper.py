@@ -1,8 +1,10 @@
 from telethon import TelegramClient, sync, events
+from telethon.tl.custom.conversation import Conversation
 from random import randint
 import asyncio
 
 import cwCommonUtils
+from cwConversation import ChatWarsConversation
 
 # 🏰Castle   ⚖Exchange  📦Stock  70 x 1000💰 [selling] 
 
@@ -15,6 +17,7 @@ class ChatWarsHelper(dict):
     def __init__(self, client):
         dict.__init__(self, client=client)
         self.client = client
+        self.conversation = ChatWarsConversation(self.client, self.chat_chatwars)
     
     async def Hide(self, item_name:str):
         print('=> hiding: ' + item_name)
@@ -55,27 +58,39 @@ class ChatWarsHelper(dict):
                 retries = retries - 1
                 await asyncio.sleep(2)
     
-    async def testMessageAboutCW(self, event: events.NewMessage.Event):
+    async def Hide2(self, item_name):
+        print('=> hiding: ' + item_name)
+        await self.conversation.sayMe()
+
+    async def cwNewMessageHandler(self, event: events.NewMessage.Event):
         if self.on == False:
             return
         try:
-            
-            if 'agus' in event.raw_text:
-                if 'spawn miracle' in event.raw_text:
-                    print('-sending message... raw_text: ' + event.raw_text)
-                    await self.client.send_message(event.input_chat, 'hmmm_newMessage_Handler')
-                    print('-message sent.')
-                if 'Hide' in event.raw_text:
-                    await self.Hide('thread')
+            print('=> cwNewMessageHandler message:' + str(event.raw_text))
+            print('TestHideItem thread: ' + str(self.TestHideItem('thread', str(event.raw_text))))
+            if self.TestHideItem('thread', str(event.raw_text)):
+                await self.HideItem('thread')
+
             
         except Exception as e:
-            print('Error in testMessageAboutCW: ')
+            print('Error in cwNewMessageHandler: ')
             print(str(e))
+    
+
+    def TestHideItem(self, item_name, text):
+        return cwCommonUtils.TestFollowingWords(['agus','cwh','hide', item_name], text.lower())
+    
+    async def HideItem(self, item_name):
+        await self.Hide2(item_name)
 
 
 
-### TODO: cuando lee un 404 Not Found o el en el chtwrsbot intenta corregir?
-### TODO:   -.,(@)-.-
+
+
+
+
+### TODO: cuando lee un 404 Not Found o el ¯\_(ツ)_/¯ en el chtwrsbot intenta corregir?
+### TODO:   -.,(@)-·¯
 ### TODO: 
 ### TODO: 
 ### TODO: 

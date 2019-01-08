@@ -21,3 +21,20 @@ def GetItemAmountFromExchange(item_name:str, exchange):
     if iteml in exl:
         return int(exl.split(iteml + '\n')[1].split(' x')[0])
     return 0
+
+
+def TestFollowingWords(words, text):
+    head, *tail = words
+    if isinstance(words, list) and len(words) > 0 and isinstance(text, str) and text:
+        if head in text:
+            if (len(tail) == 0):
+                return True
+            else:
+                return TestFollowingWords(tail, text.split(head, 1)[1])
+    else:
+        return False
+
+
+def TestHideItem(item_name, text):
+    return TestFollowingWords(['agus','cwh','hide', item_name], text.lower())
+
