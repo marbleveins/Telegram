@@ -19,55 +19,28 @@ class ChatWarsHelper(dict):
         self.client = client
         self.conversation = ChatWarsConversation(self.client, self.chat_chatwars)
     
-    async def Hide(self, item_name:str):
+    async def Hide(self, item_name):
         print('=> hiding: ' + item_name)
-        await self.client.send_message(self.chat_me, 'hiding' + item_name + ', make sure to check time')
-        async with self.client.conversation(self.chat_chatwars) as conv:
-            await conv.send_message('/stock')#reemplazar esto con /t que dice cuantos tengo
-            stock = (await conv.get_response()).raw_text
-            await conv.send_message(':arrow_left:Back')
-            print('printing stock: ' + str(stock))
-            item_amount = cwCommonUtils.GetItemAmountFromStock(item_name, stock)
-            print('_________________________________________')
-            print(item_name + ' to hide: ' + str(item_amount))
-            if item_amount > 0:
-                await conv.send_message('🏰Castle')
-                castle = (await conv.get_response()).raw_text
-                await asyncio.sleep(randint(1,2))
-                await conv.send_message('⚖Exchange')
-                exchange = (await conv.get_response()).raw_text
-                removeItem = cwCommonUtils.GetRemoveHashFromExchange(item_name, exchange)
-                if removeItem != None:
-                    await conv.send_message(removeItem)
-                    removeResponse = (await conv.get_response()).raw_text
-                    print(item_name + ' already in exchange: ' + str(cwCommonUtils.GetItemAmountFromExchange(item_name, exchange)))
-                    item_amount = item_amount + cwCommonUtils.GetItemAmountFromExchange(item_name, exchange)
-                
-                print(str('new total ' + item_name + ' to hide: ' + str(item_amount)))
-                await asyncio.sleep(2)
-                await self.TryToSell('/wts_01_' + str(item_amount) + '_1000', conv)
-
-    async def TryToSell(self, command, conv):
-        retries = 3
-        while retries > 0:
-            await conv.send_message(command)
-            response = (await conv.get_response()).raw_text
-            if 'You are selling:' in response and 'Cancel trade' in response:
-                return
-            else:
-                retries = retries - 1
-                await asyncio.sleep(2)
-    
-    async def Hide2(self, item_name):
-        print('=> hiding: ' + item_name)
-        await self.conversation.sayMe()
+        item_quantity = await self.conversation.GetItemQuantity(item_name)
+        print(item_name + ' to hide: ' + str(item_quantity))
+        if item_quantity > 0:
+            remove_hash = await self.conversation.GetRemoveHashFromExchange(item_name)
+            if remove_hash != None:#ir una sola vez al exchange y obtener hidden_quantity y remove hash
+                hidden_quantity = await self.conversation.GetItemQuantityInExchange(item_name)
+                print(item_name + ' already in exchange: ' + str(hidden_quantity))
+                removed = await self.conversation.RemoveItemFromExchange(remove_hash)
+                if removed:
+                    total_quantity = item_quantity + hidden_quantity
+                    print(str('new total ' + item_name + ' to hide: ' + str(total_quantity)))
+                    await asyncio.sleep(2)
+                    await self.conversation.TryToSell('/wts_01_' + str(total_quantity) + '_1000')
 
     async def cwNewMessageHandler(self, event: events.NewMessage.Event):
         if self.on == False:
             return
         try:
-            print('=> cwNewMessageHandler message:' + str(event.raw_text))
-            print('TestHideItem thread: ' + str(self.TestHideItem('thread', str(event.raw_text))))
+            if event and event.chat:
+                print('=> cwNewMessageHandler message from "' + str(event.chat.title) + '" :' + str(event.raw_text))
             if self.TestHideItem('thread', str(event.raw_text)):
                 await self.HideItem('thread')
 
@@ -76,12 +49,14 @@ class ChatWarsHelper(dict):
             print('Error in cwNewMessageHandler: ')
             print(str(e))
     
+    #async def HideHiddenItems(self):
+
 
     def TestHideItem(self, item_name, text):
         return cwCommonUtils.TestFollowingWords(['agus','cwh','hide', item_name], text.lower())
     
     async def HideItem(self, item_name):
-        await self.Hide2(item_name)
+        await self.Hide(item_name)
 
 
 

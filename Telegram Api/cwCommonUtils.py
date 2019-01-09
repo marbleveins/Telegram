@@ -1,5 +1,33 @@
 
+items = {
+    "thread": "01",
+    "magic stone": "13",
+    "powder": "07"
+}
 
+commands = {
+    "back": "⬅Back",
+    "castle": "🏰Castle",
+    "exchange": "⚖Exchange",
+    "stock": "/stock",
+    "me": "🏅Me",
+    "/t": "/t"
+}
+
+def GetCommand(command):
+    return commands.get(command)
+
+def GetItemId(name):
+    return items.get(name)
+
+def GetItemName(id):
+    ids = items.values()
+    if id not in ids:
+        return None    
+    return items.keys()[items.values().index(id)] 
+    #for key, val in items.items():
+    #    if val == id:
+    #        return key
 
 #usar parametro pattern con regEx
 def GetItemAmountFromStock(item_name:str, stock):
@@ -37,4 +65,3 @@ def TestFollowingWords(words, text):
 
 def TestHideItem(item_name, text):
     return TestFollowingWords(['agus','cwh','hide', item_name], text.lower())
-
