@@ -19,41 +19,50 @@ class ChatWarsHelper(dict):
         self.client = client
         self.conversation = ChatWarsConversation(self.client, self.chat_chatwars)
     
+    #async def Deposit?
+
     async def Hide(self, item_name):
-        print('=> hiding: ' + item_name)
-        item_quantity = await self.conversation.GetItemQuantity(item_name)
-        print(item_name + ' to hide: ' + str(item_quantity))
-        if item_quantity > 0:
-            remove_hash = await self.conversation.GetRemoveHashFromExchange(item_name)
-            if remove_hash != None:#ir una sola vez al exchange y obtener hidden_quantity y remove hash
-                hidden_quantity = await self.conversation.GetItemQuantityInExchange(item_name)
-                print(item_name + ' already in exchange: ' + str(hidden_quantity))
-                removed = await self.conversation.RemoveItemFromExchange(remove_hash)
-                if removed:
-                    total_quantity = item_quantity + hidden_quantity
-                    print(str('new total ' + item_name + ' to hide: ' + str(total_quantity)))
-                    await asyncio.sleep(2)
-                    await self.conversation.TryToSell('/wts_01_' + str(total_quantity) + '_1000')
+        try:
+            print('=> hiding: ' + item_name)
+            item_quantity = await self.conversation.GetItemQuantity(item_name)
+            print(item_name + ' to hide: ' + str(item_quantity))
+            if item_quantity > 0:
+                remove_hash = await self.conversation.GetRemoveHashFromExchange(item_name)
+                if remove_hash != None:#ir una sola vez al exchange y obtener hidden_quantity y remove hash
+                    hidden_quantity = await self.conversation.GetItemQuantityInExchange(item_name)
+                    print(item_name + ' already in exchange: ' + str(hidden_quantity))
+                    removed = await self.conversation.RemoveItemFromExchange(remove_hash)
+                    if removed:
+                        total_quantity = item_quantity + hidden_quantity
+                else:
+                    print('no' + item_name + ' in exchange: ')
+                    total_quantity = item_quantity
+                await asyncio.sleep(2)
+                await self.conversation.TryToSell(item_name, total_quantity)
+        except Exception as err:
+            print('Error in Hide: ')
+            print(str(err))
 
     async def cwNewMessageHandler(self, event: events.NewMessage.Event):
         if self.on == False:
             return
         try:
             if event and event.chat:
-                print('=> cwNewMessageHandler message from "' + str(event.chat.title) + '" :' + str(event.raw_text))
+                chat_name = event.chat.title if hasattr(event.chat, 'title') else event.chat.username
+                print('=> cwNewMessageHandler message from "' + str(chat_name) + '" :' + str(event.raw_text))
             if self.TestHideItem('thread', str(event.raw_text)):
                 await self.HideItem('thread')
 
             
-        except Exception as e:
+        except Exception as err:
             print('Error in cwNewMessageHandler: ')
-            print(str(e))
+            print(str(err))
     
     #async def HideHiddenItems(self):
 
 
     def TestHideItem(self, item_name, text):
-        return cwCommonUtils.TestFollowingWords(['agus','cwh','hide', item_name], text.lower())
+        return cwCommonUtils.TestFollowingWords(['agusbot','cwh','hide', item_name], text.lower())
     
     async def HideItem(self, item_name):
         await self.Hide(item_name)

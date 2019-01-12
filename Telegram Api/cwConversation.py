@@ -34,13 +34,18 @@ class ChatWarsConversation(dict):
             self.conversation.send_message(message)
             response = self.conversation.get_response()
         return response
-    async def SendMessageAsync(self, message):
+    
+    async def SendMessageAsync(self, message_text):
         print('SendMessageAsync')
         await asyncio.sleep(randint(1,2))
-        async with self.conversation:
-            response = self.conversation.wait_event(events.NewMessage(incoming=True))
-            await self.conversation.send_message(message)
-        return await response
+        try:
+            async with self.conversation:
+                message = await self.conversation.send_message(message_text)
+                return await self.conversation.get_response(message)
+        except Exception as err:
+            print('Error in SendMessageAsync: ')
+            print(str(err))
+            
     
     def StartListening(self, function=None):
         self.client.add_event_handler(self.NewMessageArrived, events.NewMessage)
@@ -65,23 +70,23 @@ class ChatWarsConversation(dict):
 
     
     async def sayBack(self):
-        await self.SendMessageAsync(cwCommonUtils.GetCommand("back"))
+        return await self.SendMessageAsync(cwCommonUtils.GetCommand("back"))
     async def sayCastle(self):
-        await self.SendMessageAsync(cwCommonUtils.GetCommand("castle"))
+        return await self.SendMessageAsync(cwCommonUtils.GetCommand("castle"))
     async def sayExchange(self):
-        await self.SendMessageAsync(cwCommonUtils.GetCommand("exchange"))
+        return await self.SendMessageAsync(cwCommonUtils.GetCommand("exchange"))
     async def sayStock(self):
-        await self.SendMessageAsync(cwCommonUtils.GetCommand("stock"))
+        return await self.SendMessageAsync(cwCommonUtils.GetCommand("stock"))
     async def sayMe(self):
-        await self.SendMessageAsync(cwCommonUtils.GetCommand("me"))
+        return await self.SendMessageAsync(cwCommonUtils.GetCommand("me"))
     async def sayRemoveHash(self, remove_hash):
-        await self.SendMessageAsync(remove_hash)
+        return await self.SendMessageAsync(remove_hash)
     async def saySell(self, command):
-        await self.SendMessageAsync(command)
+        return await self.SendMessageAsync(command)
 
     async def GetItemQuantity(self, item_name):
-        stock = (await self.sayStock()).raw_text
-        return cwCommonUtils.GetItemAmountFromStock(item_name, stock)
+        stock = await self.sayStock()
+        return cwCommonUtils.GetItemAmountFromStock(item_name, stock.raw_text)
 
     async def GetItemQuantityInExchange(self, item_name):
         await self.sayMe()
@@ -103,7 +108,10 @@ class ChatWarsConversation(dict):
         else:
             return False
     
-    async def TryToSell(self, command):
+    async def TryToSell(self, item_name, quantity):
+        print('Hiding ' + str(quantity) + ' ' + item_name )
+        item_id = self.conversation.getItemId(item_name)
+        command = '/wts_' + str(item_id) + '_' + str(quantity) + '_1000'
         retries = 3
         while retries > 0:
             response = (await self.saySell(command)).raw_text
