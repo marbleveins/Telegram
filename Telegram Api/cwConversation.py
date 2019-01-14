@@ -110,7 +110,7 @@ class ChatWarsConversation(dict):
     
     async def TryToSell(self, item_name, quantity):
         print('Hiding ' + str(quantity) + ' ' + item_name )
-        item_id = self.conversation.getItemId(item_name)
+        item_id = cwCommonUtils.GetItemId(item_name)
         command = '/wts_' + str(item_id) + '_' + str(quantity) + '_1000'
         retries = 3
         while retries > 0:
@@ -119,7 +119,7 @@ class ChatWarsConversation(dict):
                 return True
             else:
                 retries = retries - 1
-                await asyncio.sleep(2)
+                await asyncio.sleep(3)
         return False
 
     
