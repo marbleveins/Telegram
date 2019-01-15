@@ -1,3 +1,4 @@
 autoCW
 /Telegram Api/*.session
 /Telegram Api/*.session-journal
+/Telegram Api/__pycache__
