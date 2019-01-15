@@ -68,6 +68,9 @@ class ChatWarsConversation(dict):
             await self.listeningCallBack()
 
 
+
+
+
     
     async def sayBack(self):
         return await self.SendMessageAsync(cwCommonUtils.GetCommand("back"))
@@ -83,21 +86,42 @@ class ChatWarsConversation(dict):
         return await self.SendMessageAsync(remove_hash)
     async def saySell(self, command):
         return await self.SendMessageAsync(command)
+    async def sayPota(self, command):
+        return await self.SendMessageAsync(command)
+    async def sayCraft(self, item_name):
+        item_id = cwCommonUtils.GetItemId(item_name)
+        return await self.SendMessageAsync('/c_' + item_id)
+    
+    async def sayCraftRecursivePlan(self, item_id, plan):#decir /c_ por orden de abajo arriba
+        return await self.SendMessageAsync('/c_' + item_id)
+    async def sayCraftUp(self, item_id, qtty:int):
+        return await self.SendMessageAsync('/c_' + item_id)
+    async def sayCraftDown(self, item_id, qtty:int):
+        return await self.SendMessageAsync('/c_' + item_id)
+
+
+
+
+
+
+
+
+    async def GetFirstItemNameFromCraftResult(self, result):
+        return ''
 
     async def GetItemQuantity(self, item_name):
         stock = await self.sayStock()
         return cwCommonUtils.GetItemAmountFromStock(item_name, stock.raw_text)
 
-    async def GetItemQuantityInExchange(self, item_name):
+    async def GetExchange(self):
         await self.sayMe()
         await self.sayCastle()
-        exchange = (await self.sayExchange()).raw_text
+        return (await self.sayExchange()).raw_text
+
+    async def GetItemQuantityFromExchange(self, item_name, exchange):
         return cwCommonUtils.GetItemAmountFromExchange(item_name, exchange)
     
-    async def GetRemoveHashFromExchange(self, item_name):
-        await self.sayMe()
-        await self.sayCastle()
-        exchange = (await self.sayExchange()).raw_text
+    async def GetRemoveHashFromExchange(self, item_name, exchange):
         return cwCommonUtils.GetRemoveHashFromExchange(item_name, exchange)
     
     async def RemoveItemFromExchange(self, remove_hash):

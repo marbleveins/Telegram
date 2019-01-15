@@ -110,5 +110,5 @@ Start()
 ### TODO: lista de ignorados y lista de reservados, modo reservado o no (default todos le hablan),  
 ### TODO: metodo para preguntar grupos activos en la semana tira consulta? (quizas evitar consultas de bot)
 ### TODO: 
-### TODO: 
+### TODO: empezar conversacion con el mismo bot en un chat donde me conteste (self)
 ### TODO: 
