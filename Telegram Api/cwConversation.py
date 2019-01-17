@@ -88,9 +88,8 @@ class ChatWarsConversation(dict):
         return await self.SendMessageAsync(command)
     async def sayPota(self, command):
         return await self.SendMessageAsync(command)
-    async def sayCraft(self, item_name):
-        item_id = cwCommonUtils.GetItemId(item_name)
-        return await self.SendMessageAsync('/c_' + item_id)
+    async def sayCraft(self, item_id, qtty):
+        return await self.SendMessageAsync('/c_' + item_id + ' ' + str(qtty))
     
     async def sayCraftRecursivePlan(self, item_id, plan):#decir /c_ por orden de abajo arriba
         return await self.SendMessageAsync('/c_' + item_id)

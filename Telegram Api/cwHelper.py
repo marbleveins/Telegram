@@ -20,16 +20,32 @@ class ChatWarsHelper(dict):
         self.conversation = ChatWarsConversation(self.client, self.chat_chatwars)
     
     #async def Deposit?
-        
-    async def CraftRecursive(self, item_name):
+    
+    async def Craft(self, item_name, qtty):
+        item_id = cwCommonUtils.GetItemId(item_name)
+        result = await self.CraftRecursive(item_id, str(qtty))
+        if result is True:
+            print('Crafted: ' + item_name + ' x ' + str(qtty))
+        else:
+            print('NO PUDE CRAFTEAR')
+
+    async def CraftRecursive(self, item_id, qtty):
         try:
-            requiered = (await self.conversation.sayCraft(item_name)).raw_text
+            response = (await self.conversation.sayCraft(item_id, qtty)).raw_text
             await asyncio.sleep(2)
-            if isinstance(requiered, str):
-                first_item_requiered = await self.conversation.GetFirstItemNameFromCraftResult(requiered)
-                return await self.CraftRecursive(first_item_requiered)
-            else:
+            if cwCommonUtils.TestCraftResult(response) == 'REQUIRED':
+                response = cwCommonUtils.GetRequiredItemsFromCraftResult(response, ' ')
+                for requiered_item in response:
+                    item_requiered_id = cwCommonUtils.GetItemIdFromCraftOrder(requiered_item)
+                    item_requiered_qtty = cwCommonUtils.GetItemQttyFromCraftOrder(requiered_item)
+                    required_craft_result = await self.CraftRecursive(item_requiered_id, item_requiered_qtty)
+                    if required_craft_result == False: return False
                 return True
+            elif cwCommonUtils.TestCraftResult(response) == 'MANA':
+                return False
+            elif cwCommonUtils.TestCraftResult(response) == 'CRAFTED':
+                return True
+            return False
         except Exception as err:
             print('Error in CraftRecursive: ')
             print(str(err))
@@ -64,11 +80,17 @@ class ChatWarsHelper(dict):
             if event and event.chat:
                 chat_name = event.chat.title if hasattr(event.chat, 'title') else event.chat.username
                 print('=> cwNewMessageHandler message from "' + str(chat_name) + '" :' + str(event.raw_text))
+            
             if self.TestHideItem(str(event.raw_text), 'thread'):
                 await self.HideItem('thread')
-            if self.TestCraftItem(str(event.raw_text), 'coke'):
-                item_name = self.GetItemNameFromOrder(event.raw_text)
-                await self.CraftRecursive('coke')
+
+            if self.TestCraftRecursive(str(event.raw_text)):
+                order = cwCommonUtils.GetItemFromOrder(str(event.raw_text), 'recursive')
+                item_id = cwCommonUtils.GetItemIdFromCraftOrder(order)
+                item_qtty = cwCommonUtils.GetItemQttyFromCraftOrder(order)
+                item_name = cwCommonUtils.GetItemName(item_id)
+                await self.Craft(item_name, item_qtty)
+
             if self.TestPota(str(event.raw_text), None):
                 await self.conversation.sayPota('/use_p13')#mana
 
@@ -81,17 +103,16 @@ class ChatWarsHelper(dict):
 
 
     def TestHideItem(self, text, item_name):
-        return cwCommonUtils.TestFollowingWords(['agusbot','cwh','hide', item_name], text.lower())
+        return cwCommonUtils.TestCommandInText(cwCommonUtils.startingCall + ['hide', item_name], text)
     def TestChangeItem(self, text, item_name):
-        return cwCommonUtils.TestFollowingWords(['agusbot','cwh','shop', 'change',item_name], text.lower())
-    def TestCraftItem(self, text, item_name):
-        return cwCommonUtils.TestFollowingWords(['agusbot','cwh','craft', 'recursive', item_name], text.lower())
+        return cwCommonUtils.TestCommandInText(cwCommonUtils.startingCall + ['shop', 'change', item_name], text)
+    def TestCraftRecursive(self, text):
+        return cwCommonUtils.TestCommandInText(cwCommonUtils.startingCall + ['craft', 'recursive'], text)
     def TestPota(self, text, item_name=None):
-        return cwCommonUtils.TestFollowingWords(['agusbot','cwh','use', 'pota', item_name], text.lower())
-    
-    def GetItemNameFromOrder(self, order):
-        #
-        return ''
+        if isinstance(item_name, str):
+            return cwCommonUtils.TestCommandInText(cwCommonUtils.startingCall + ['pota', item_name], text)
+        else:
+            return cwCommonUtils.TestCommandInText(cwCommonUtils.startingCall + ['pota'], text)
     
     async def HideItem(self, item_name):
         await self.Hide(item_name)
